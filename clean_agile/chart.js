@@ -96,13 +96,11 @@ const chartUrl = `${baseUrl}?version=3&c=${encodeURIComponent(
   JSON.stringify(chartConfig)
 )}`;
 
-// 新しいmetaタグを作成
-const meta = document.createElement("meta");
-meta.setAttribute("property", "og:image");
-meta.setAttribute("content", chartUrl);
-
-// headセクションに追加
-document.head.appendChild(meta);
+// 既存のmetaタグの属性を変更
+const meta = document.querySelector('meta[property="og:image"]');
+if (meta) {
+  meta.setAttribute("content", chartUrl);
+}
 
 window.onload = function () {
   const velocityHTML = `<strong>Velocity: ${velocityRounded(
