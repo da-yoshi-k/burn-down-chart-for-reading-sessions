@@ -1,16 +1,30 @@
 const ACHIEVEMENT_DATA = [146, 137, 119, 97, 82, 71]; // 実績を入力していく
-const DAYS = ['0', '11/21', '11/28', '12/5', '12/19', '12/26', '2024/1/9', '1/16', '1/23', '1/30', '2/6', '2/13']; // 休みは除く
+const DAYS = [
+  "0",
+  "11/21",
+  "11/28",
+  "12/5",
+  "12/19",
+  "12/26",
+  "2024/1/9",
+  "1/16",
+  "1/23",
+  "1/30",
+  "2/6",
+  "2/13",
+]; // 休みは除く
 
-const velocity = (data) => (data[0] - data[data.length - 1]) / (data.length - 1);
+const velocity = (data) =>
+  (data[0] - data[data.length - 1]) / (data.length - 1);
 const velocityRounded = (data) => Math.round(velocity(data) * 10) / 10; // 割り切れないと見にくいので小数第2位で四捨五入して利用
 const trendLineData = DAYS.map((_, index) => {
   const stepValue = velocityRounded(ACHIEVEMENT_DATA) * index;
   return Math.round((ACHIEVEMENT_DATA[0] - stepValue) * 10) / 10;
 });
-
+console.log(trendLineData);
 const myPlugin = {
-  id: 'customText',
-  afterDatasetsDraw: function(chart, args, options) {
+  id: "customText",
+  afterDatasetsDraw: function (chart, args, options) {
     const ctx = chart.ctx;
     chart.data.datasets.forEach((dataset, i) => {
       const meta = chart.getDatasetMeta(i);
@@ -29,8 +43,8 @@ const myPlugin = {
           }
 
           const point = `${differenceFromPrevious}pt`;
-          ctx.fillStyle = '#ff6347';
-          ctx.font = Chart.helpers.fontString(14, 'normal', 'Helvetica Neue');
+          ctx.fillStyle = "#ff6347";
+          ctx.font = Chart.helpers.fontString(14, "normal", "Helvetica Neue");
 
           const textWidth = ctx.measureText(point).width;
           const textPosition = element.tooltipPosition();
@@ -38,32 +52,83 @@ const myPlugin = {
         });
       }
     });
-  }
+  },
 };
 
 Chart.register(myPlugin);
 
+const chartConfig = {
+  type: "line",
+  data: {
+    labels: DAYS,
+    datasets: [
+      {
+        label: "Read Points",
+        data: ACHIEVEMENT_DATA,
+        borderColor: "#ff6347",
+        backgroundColor: "#ff6347",
+        customTextEnabled: true,
+      },
+      {
+        label: "Trend Line",
+        data: trendLineData,
+        borderColor: "#00FFFF",
+        backgroundColor: "#00FFFF",
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        title: {
+          display: true,
+          text: "Number of Pages",
+        },
+      },
+    },
+  },
+};
+
+const baseUrl = "https://quickchart.io/chart";
+const chartUrl = `${baseUrl}?version=3&c=${encodeURIComponent(
+  JSON.stringify(chartConfig)
+)}`;
+
+// 新しいmetaタグを作成
+const meta = document.createElement("meta");
+meta.setAttribute("property", "og:image");
+meta.setAttribute("content", chartUrl);
+
+// headセクションに追加
+document.head.appendChild(meta);
+
 window.onload = function () {
-  const velocityHTML = `<strong>Velocity: ${velocityRounded(ACHIEVEMENT_DATA)}</strong>`
+  const velocityHTML = `<strong>Velocity: ${velocityRounded(
+    ACHIEVEMENT_DATA
+  )}</strong>`;
   document.querySelector("#velocity").innerHTML = velocityHTML;
-  let context = document.querySelector("#clean_agile_burn_down").getContext('2d');
+  let context = document
+    .querySelector("#clean_agile_burn_down")
+    .getContext("2d");
   new Chart(context, {
-    type: 'line',
+    type: "line",
     data: {
       labels: DAYS,
       datasets: [
         {
-          label: 'Read Points',
+          label: "Read Points",
           data: ACHIEVEMENT_DATA,
-          borderColor: '#ff6347',
-          backgroundColor: '#ff6347',
+          borderColor: "#ff6347",
+          backgroundColor: "#ff6347",
           customTextEnabled: true,
         },
         {
-          label: 'Trend Line',
+          label: "Trend Line",
           data: trendLineData,
-          borderColor: '#00FFFF',
-          backgroundColor: '#00FFFF',
+          borderColor: "#00FFFF",
+          backgroundColor: "#00FFFF",
         },
       ],
     },
@@ -74,14 +139,14 @@ window.onload = function () {
           min: 0,
           title: {
             display: true,
-            text: 'Number of Pages',
+            text: "Number of Pages",
           },
-        }
+        },
       },
       plugins: {
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const dataIndex = context.dataIndex;
               const firstData = context.dataset.data[0];
               const currentData = context.dataset.data[dataIndex];
@@ -96,13 +161,13 @@ window.onload = function () {
 
               return [
                 `累計: ${differenceFromFirst}pt`,
-                `残り: ${currentData}pt`
+                `残り: ${currentData}pt`,
               ];
-            }
-          }
-        }
+            },
+          },
+        },
       },
       responsive: false,
-    }
+    },
   });
 };
